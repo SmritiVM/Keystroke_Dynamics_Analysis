@@ -3,8 +3,6 @@ from pynput.keyboard import Listener, Key
 import csv
 import time
 
-# keystroke_data = []
-
 
 def collect_keystroke_data():
     keystroke_timings = defaultdict(lambda : {'up':0, 'down':0})
@@ -25,9 +23,6 @@ def collect_keystroke_data():
             pass
 
     def on_release(key):
-        # if key == Key.shift:
-        #     keystroke_timings['Shift']['up'] = time.time()
-        #     return
         try:
             keystroke_timings[key.char]["up"] = time.time()
         except AttributeError:
@@ -53,12 +48,8 @@ def keyword(key):
 
 def generate_timing_vector(keystroke_timings, password):
     timing_vector = defaultdict(lambda: 0)
-    # # First drop any keys stored which do not belong to the password
-    # # and count the number of backspaces
-    # backspaces = 0
-    # required_keys = []
-    for key in keystroke_timings:
-        print(key, keystroke_timings[key])
+    # for key in keystroke_timings:
+    #     print(key, keystroke_timings[key])
 
     # Iterating all characters of password and finding h, dd, ud
     # Hold time = up - down
@@ -79,16 +70,24 @@ def generate_timing_vector(keystroke_timings, password):
         timing_vector[f'UD.{prev_keyword}.{curr_keyword}'] = keystroke_timings[key]['up'] - keystroke_timings[prev]['down']
         prev = key
     
-    print(timing_vector)
+    # print(timing_vector)
+    return timing_vector
+
+def write_csv(name, timing_vector):
+    with open(f'{name}_keystrokes.csv', 'w', newline='') as file:
+        writer = csv.DictWriter(file, timing_vector.keys())
+        writer.writeheader()
+        writer.writerow(timing_vector)
+    
+
 
 if __name__ == "__main__":
+    name = input("Enter name: ")
     data_entered, keystroke_timings = collect_keystroke_data()
-    # print(data_entered)
-    # for key in keystroke_timings:
-    #     print(key, keystroke_timings[key])
     password = ".tie5Ronal"
     if data_entered == password:
-        generate_timing_vector(keystroke_timings, password)
+        timing_vector = generate_timing_vector(keystroke_timings, password)
+        write_csv(name, timing_vector)
     else:
         print("Incorrect")
         
