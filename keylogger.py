@@ -41,7 +41,7 @@ def keyword(key):
     if key == '5': return 'five'
     return key
 
-def generate_timing_vector(keystroke_timings, password, current_iteration):
+def generate_timing_vector(keystroke_timings, password, current_iteration, name):
     timing_vector = defaultdict(lambda: 0)
     # for key in keystroke_timings:
     #     print(key, keystroke_timings[key])
@@ -50,6 +50,7 @@ def generate_timing_vector(keystroke_timings, password, current_iteration):
     # Hold time = up - down
     # DD = down - down_prev
     # UD = down - up_prev
+    timing_vector['name'] = name
     timing_vector['rep'] = current_iteration
     prev = None
     for index, key in enumerate(password):
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         password = ".tie5Ronal"
         if data_entered == password:
             print("Password correct!")
-            timing_vector = generate_timing_vector(keystroke_timings, password, current_iteration)
+            timing_vector = generate_timing_vector(keystroke_timings, password, current_iteration, name)
             timing_vectors.append(timing_vector)
             current_iteration += 1
         elif data_entered:
