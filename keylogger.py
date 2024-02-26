@@ -27,13 +27,8 @@ def collect_keystroke_data():
             keystroke_timings[key.char]["up"] = time.time()
         except AttributeError:
             pass
-        if key == Key.esc:
-            # Write data to CSV file
-            # with open("keystroke_data.csv", mode="w", newline="") as file:
-            #     writer = csv.DictWriter(file, fieldnames=["key", "hold_time", "down_down_time", "up_down_time"])
-            #     writer.writeheader()
-            #     for data in keystroke_data:
-            #         writer.writerow(data)
+    
+        if key == Key.enter:
             return False
 
     with Listener(on_press=on_press, on_release=on_release) as listener:
@@ -46,7 +41,7 @@ def keyword(key):
     if key == '5': return 'five'
     return key
 
-def generate_timing_vector(keystroke_timings, password):
+def generate_timing_vector(keystroke_timings, password, current_iteration):
     timing_vector = defaultdict(lambda: 0)
     # for key in keystroke_timings:
     #     print(key, keystroke_timings[key])
@@ -55,6 +50,7 @@ def generate_timing_vector(keystroke_timings, password):
     # Hold time = up - down
     # DD = down - down_prev
     # UD = down - up_prev
+    timing_vector['rep'] = current_iteration
     prev = None
     for index, key in enumerate(password):
         curr_keyword = keyword(key)
@@ -73,21 +69,28 @@ def generate_timing_vector(keystroke_timings, password):
     # print(timing_vector)
     return timing_vector
 
-def write_csv(name, timing_vector):
+def write_csv(name, timing_vectors):
     with open(f'{name}_keystrokes.csv', 'w', newline='') as file:
-        writer = csv.DictWriter(file, timing_vector.keys())
+        writer = csv.DictWriter(file, fieldnames=list(timing_vectors[0].keys()))
         writer.writeheader()
-        writer.writerow(timing_vector)
+        writer.writerows(timing_vectors)
     
 
 
 if __name__ == "__main__":
     name = input("Enter name: ")
-    data_entered, keystroke_timings = collect_keystroke_data()
-    password = ".tie5Ronal"
-    if data_entered == password:
-        timing_vector = generate_timing_vector(keystroke_timings, password)
-        write_csv(name, timing_vector)
-    else:
-        print("Incorrect")
+    current_iteration = 1
+    timing_vectors = []
+    while current_iteration <= 2:
+        data_entered, keystroke_timings = collect_keystroke_data()
+        password = ".tie5Ronal"
+        if data_entered == password:
+            print("Password correct!")
+            timing_vector = generate_timing_vector(keystroke_timings, password, current_iteration)
+            timing_vectors.append(timing_vector)
+            current_iteration += 1
+        elif data_entered:
+            print("Incorrect! Enter again")
+    
+    write_csv(name, timing_vectors)
         
