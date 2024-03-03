@@ -8,11 +8,16 @@ def collect_keystroke_data():
     keystroke_timings = defaultdict(lambda : {'up':0, 'down':0})
     data_entered = ""
     backspaces = 0
+    caps_lock = 0
     def on_press(key):
-        nonlocal data_entered, backspaces
+        nonlocal data_entered, backspaces, caps_lock
         if key == Key.backspace:
             data_entered = data_entered[:-1] #stripping last character
             backspaces += 1
+        if key == Key.caps_lock:
+            data_entered = data_entered[:-1] + data_entered[-1].upper()
+            caps_lock += 1
+                
         try:
             print(f'{key.char}')
             data_entered += key.char
@@ -32,14 +37,14 @@ def collect_keystroke_data():
     with Listener(on_press=on_press, on_release=on_release) as listener:
         listener.join()
     
-    return data_entered, keystroke_timings, backspaces
+    return data_entered, keystroke_timings, backspaces, caps_lock
 
 def keyword(key):
     if key == '.': return 'period'
     if key == '5': return 'five'
     return key
 
-def generate_timing_vector(keystroke_timings, password, backspaces, current_iteration, name):
+def generate_timing_vector(keystroke_timings, password, backspaces, caps_lock, current_iteration, name):
     timing_vector = defaultdict(lambda: 0)
     # for key in keystroke_timings:
     #     print(key, keystroke_timings[key])
@@ -68,10 +73,11 @@ def generate_timing_vector(keystroke_timings, password, backspaces, current_iter
         prev = key
     
     timing_vector['backspaces'] = backspaces
+    timing_vector['caps_lock'] = caps_lock
     return timing_vector
 
 def write_csv(name, timing_vectors):
-    with open(f'{name}_keystrokes_bks.csv', 'w', newline='') as file:
+    with open(f'Data/{name}_keystrokes_bks.csv', 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=list(timing_vectors[0].keys()))
         writer.writeheader()
         writer.writerows(timing_vectors)
@@ -82,15 +88,16 @@ if __name__ == "__main__":
     name = input("Enter name: ")
     current_iteration = 1
     timing_vectors = []
-    while current_iteration <= 2:
-        data_entered, keystroke_timings, backspaces = collect_keystroke_data()
+    while current_iteration <= 10:
+        data_entered, keystroke_timings, backspaces, caps_lock = collect_keystroke_data()
         password = ".tie5Ronal"
         if data_entered == password:
             print("Password correct!")
-            timing_vector = generate_timing_vector(keystroke_timings, password, backspaces, current_iteration, name)
+            timing_vector = generate_timing_vector(keystroke_timings, password, backspaces, caps_lock, current_iteration, name)
             timing_vectors.append(timing_vector)
             current_iteration += 1
         elif data_entered:
+            print(data_entered)
             print("Incorrect! Enter again")
     
     write_csv(name, timing_vectors)
