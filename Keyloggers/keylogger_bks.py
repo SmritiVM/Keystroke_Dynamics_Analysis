@@ -77,7 +77,7 @@ def generate_timing_vector(keystroke_timings, password, backspaces, caps_lock, c
     return timing_vector
 
 def write_csv(name, timing_vectors):
-    with open(f'Data/{name}_keystrokes_bks.csv', 'a', newline='') as file:
+    with open(f'{name}_keystrokes_bks.csv', 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=list(timing_vectors[0].keys()))
         writer.writeheader()
         writer.writerows(timing_vectors)
